@@ -71,7 +71,7 @@ def main():
         loss_epoch = []
         train_loss_dataset = tf.data.Dataset.from_tensor_slices(x_data).shuffle(len(y_data),reshuffle_each_iteration=True).batch(batch_size)
         for x in train_loss_dataset:
-            xis = resampling_random(x)  #Select the augmentation method used
+            xis = resampling_fast_random(x)  #Select the augmentation method used
             xjs = noise(x)              #Select the augmentation method used
             loss = train_step(xis, xjs, model_cl, optimizer, temperature=temperature)
             loss_epoch.append(loss)

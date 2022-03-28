@@ -1,8 +1,83 @@
 import tensorflow as tf
 import numpy as np
 import random
-
+from scipy.interpolate import interp1d
 #Part of the code reference https://github.com/iantangc/ContrastiveLearningHAR
+
+def resampling_fast(x,M,N):
+    time_steps = x.shape[1]
+    raw_set = np.arange(time_steps)
+    interp_steps = np.arange(0, raw_set[-1] + 1e-1, 1 / (M + 1))
+    x_interp = interp1d(raw_set, x, axis=1)
+    x_up = x_interp(interp_steps)
+
+    length_inserted = x_up.shape[1]
+    start = random.randint(0, length_inserted - time_steps * (N + 1))
+    index_selected = np.arange(start, start + time_steps * (N + 1), N + 1)
+    return x_up[:, index_selected, :]
+
+def resampling_fast_random(x):
+    M, N = random.choice([[1, 0], [2, 1], [3, 2]])
+    time_steps = x.shape[1]
+    raw_set = np.arange(x.shape[1])
+    interp_steps = np.arange(0, raw_set[-1] + 1e-1, 1 / (M + 1))
+    x_interp = interp1d(raw_set, x, axis=1)
+    x_up = x_interp(interp_steps)
+
+    length_inserted = x_up.shape[1]
+    start = random.randint(0, length_inserted - time_steps * (N + 1))
+    index_selected = np.arange(start, start + time_steps * (N + 1), N + 1)
+    return x_up[:, index_selected, :]
+
+def resampling(x,M,N):
+    '''
+    :param x: the data of a batch,shape=(batch_size,timesteps,features)
+    :param M: the number of  new value under tow values
+    :param N: the interval of resampling
+    :return: x after resampling，shape=(batch_size,timesteps,features)
+    '''
+    assert M>N,'the value of M have to greater than N'
+
+    timesetps = x.shape[1]
+
+    for i in range(timesetps-1):
+        x1 = x[:,i*(M+1),:]
+        x2 = x[:,i*(M+1)+1,:]
+        for j in range(M):
+            v = np.add(x1,np.subtract(x2,x1)*(j+1)/(M+1))
+            x = np.insert(x,i*(M+1)+j+1,v,axis=1)
+
+    length_inserted = x.shape[1]
+    start = random.randint(0,length_inserted-timesetps*(N+1))
+    index_selected = np.arange(start,start+timesetps*(N+1),N+1)
+    return x[:,index_selected,:]
+    return x
+
+def resampling_random(x):
+    import random
+    M = random.randint(1, 3)
+    N = random.randint(0, M - 1)
+    assert M > N, 'the value of M have to greater than N'
+
+    timesetps = x.shape[1]
+
+    for i in range(timesetps - 1):
+        x1 = x[:, i * (M + 1), :]
+        x2 = x[:, i * (M + 1) + 1, :]
+        for j in range(M):
+            v = np.add(x1, np.subtract(x2, x1) * (j + 1) / (M + 1))
+            x = np.insert(x, i * (M + 1) + j + 1, v, axis=1)
+    length_inserted = x.shape[1]
+    num = x.shape[0]
+    start = random.randint(0, length_inserted - timesetps * (N + 1))
+    index_selected = np.arange(start, start + timesetps * (N + 1), N + 1)
+    x_selected=x[0,index_selected,:][np.newaxis,]
+    for k in range(1,num):
+        start = random.randint(0, length_inserted - timesetps * (N + 1))
+        index_selected = np.arange(start, start + timesetps * (N + 1), N + 1)
+        x_selected = np.concatenate((x_selected,x[k,index_selected,:][np.newaxis,]),axis=0)
+    return x_selected
+
 
 def noise(x):
     x = tf.add(x,tf.multiply(x,tf.cast(tf.random.uniform(shape = (x.shape[0],x.shape[1],x.shape[2]),minval=-0.1,maxval=0.1),tf.float64)))
@@ -86,51 +161,3 @@ def axis_angle_to_rotation_matrix_3d_vectorized(axes, angles):
     matrix_transposed = np.transpose(m, axes=(2,0,1))
     return matrix_transposed
 
-def resampling(x,M,N):
-    '''
-    :param x: the data of a batch,shape=(batch_size,timesteps,features)
-    :param M: the number of  new value under tow values
-    :param N: the interval of resampling
-    :return: x after resampling，shape=(batch_size,timesteps,features)
-    '''
-    assert M>N,'the value of M have to greater than N'
-
-    timesetps = x.shape[1]
-
-    for i in range(timesetps-1):
-        x1 = x[:,i*(M+1),:]
-        x2 = x[:,i*(M+1)+1,:]
-        for j in range(M):
-            v = np.add(x1,np.subtract(x2,x1)*(j+1)/(M+1))
-            x = np.insert(x,i*(M+1)+j+1,v,axis=1)
-
-    length_inserted = x.shape[1]
-    start = random.randint(0,length_inserted-timesetps*(N+1))
-    index_selected = np.arange(start,start+timesetps*(N+1),N+1)
-    return x[:,index_selected,:]
-    return x
-
-def resampling_random(x):
-    import random
-    M = random.randint(1, 3)
-    N = random.randint(0, M - 1)
-    assert M > N, 'the value of M have to greater than N'
-
-    timesetps = x.shape[1]
-
-    for i in range(timesetps - 1):
-        x1 = x[:, i * (M + 1), :]
-        x2 = x[:, i * (M + 1) + 1, :]
-        for j in range(M):
-            v = np.add(x1, np.subtract(x2, x1) * (j + 1) / (M + 1))
-            x = np.insert(x, i * (M + 1) + j + 1, v, axis=1)
-    length_inserted = x.shape[1]
-    num = x.shape[0]
-    start = random.randint(0, length_inserted - timesetps * (N + 1))
-    index_selected = np.arange(start, start + timesetps * (N + 1), N + 1)
-    x_selected=x[0,index_selected,:][np.newaxis,]
-    for k in range(1,num):
-        start = random.randint(0, length_inserted - timesetps * (N + 1))
-        index_selected = np.arange(start, start + timesetps * (N + 1), N + 1)
-        x_selected = np.concatenate((x_selected,x[k,index_selected,:][np.newaxis,]),axis=0)
-    return x_selected

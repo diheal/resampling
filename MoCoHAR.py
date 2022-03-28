@@ -123,7 +123,7 @@ def main():
         loss_epoch = []
         train_loss_dataset = tf.data.Dataset.from_tensor_slices(x_data).shuffle(len(x_data),reshuffle_each_iteration=True).batch(batch_size)
         for x in train_loss_dataset:
-            xis = resampling(x,1,0) #Select the augmentation method used
+            xis = resampling_fast_random(x) #Select the augmentation method used
             xjs = x                 #Select the augmentation method used
             x_cat = [xis,xjs]
             with tf.GradientTape() as tape:
