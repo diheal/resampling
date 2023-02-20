@@ -62,12 +62,15 @@ The main content of each file is marked as follows:
 If you find our paper useful or use the code available in this repository in your research, please consider citing our work:
 
 ```
-@article{wang2021sensor,
-  title={Sensor Data Augmentation with Resampling for Contrastive Learning in Human Activity Recognition},
-  author={Wang, Jinqiang and Zhu, Tao and Gan, Jingyuan and Chen, Liming and Ning, Huansheng and Wan, Yaping},
-  journal={arXiv preprint arXiv:2109.02054},
-  year={2021}
-}
+@ARTICLE{9925142,
+  author={Wang, Jinqiang and Zhu, Tao and Gan, Jingyuan and Chen, Liming Luke and Ning, Huansheng and Wan, Yaping},
+  journal={IEEE Sensors Journal}, 
+  title={Sensor Data Augmentation by Resampling in Contrastive Learning for Human Activity Recognition}, 
+  year={2022},
+  volume={22},
+  number={23},
+  pages={22994-23008},
+  doi={10.1109/JSEN.2022.3214198}}
 ```
 
 ## Reference
