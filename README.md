@@ -1,4 +1,4 @@
-# Sensor Data Augmentation by Resampling for Contrastive Learning in Human Activity Recognition
+# Sensor Data Augmentation by Resampling in Contrastive Learning for Human Activity Recognition
 
 To address the problem that human activity recognition based on sensor data performs poorly in the contrastive learning framework, we propose resampling data augmentation and adapting MoCo as a contrastive learning framework for HAR
 
